@@ -1,0 +1,16 @@
+{
+  "name": "chat-app-backend",
+  "version": "1.0.0",
+  "description": "Backend API for chat application",
+  "main": "index.js",
+  "author": "User",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "pg": "^8.6.0",
+    "cors": "^2.8.5"
+  }
+}
