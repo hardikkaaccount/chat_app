@@ -44,15 +44,91 @@
   background-color: #f5f5f5;
   padding: 1rem;
   border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
 }
 
-.sidebar h2 {
-  margin-top: 0;
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+}
+
+.create-group-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.create-group-btn:hover {
+  background-color: #218838;
+}
+
+.create-group-form {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+
+.create-group-form input,
+.create-group-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.create-group-form textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-actions button:first-child {
+  background-color: #28a745;
+  color: white;
+}
+
+.form-actions button:last-child {
+  background-color: #6c757d;
+  color: white;
 }
 
 .sidebar ul {
   list-style-type: none;
   padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .sidebar li {

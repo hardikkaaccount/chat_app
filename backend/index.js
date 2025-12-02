@@ -1,18 +1,17 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 
 const app = express();
 const port = 8001;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Hasura GraphQL endpoint
-const HASURA_ENDPOINT = 'http://localhost:8080/v1/graphql';
-const HASURA_ADMIN_SECRET = 'myadminsecretkey';
+const HASURA_ENDPOINT = process.env.HASURA_ENDPOINT;
+const HASURA_ADMIN_SECRET = process.env.HASURA_ADMIN_SECRET;
 
-// Helper function to make GraphQL requests to Hasura
 async function queryHasura(query, variables = {}) {
   const response = await fetch(HASURA_ENDPOINT, {
     method: 'POST',
@@ -29,12 +28,10 @@ async function queryHasura(query, variables = {}) {
   return await response.json();
 }
 
-// User Registration
 app.post('/api/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
     
-    // Check if user already exists
     const existingUserQuery = `
       query ($username: String!, $email: String!) {
         users(where: {_or: [{username: {_eq: $username}}, {email: {_eq: $email}}]}) {
@@ -49,7 +46,6 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'User already exists with this username or email' });
     }
     
-    // Create new user
     const createUserMutation = `
       mutation ($username: String!, $email: String!, $password: String!) {
         insert_users_one(object: {username: $username, email: $email, password_hash: $password}) {
@@ -73,12 +69,10 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// User Login
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
-    // Find user by username and password
     const loginQuery = `
       query ($username: String!, $password: String!) {
         users(where: {username: {_eq: $username}, password_hash: {_eq: $password}}) {
@@ -106,7 +100,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Get all groups
 app.get('/api/groups', async (req, res) => {
   try {
     console.log('Fetching groups...');
@@ -137,7 +130,38 @@ app.get('/api/groups', async (req, res) => {
   }
 });
 
-// Get messages for a specific group
+app.post('/api/groups', async (req, res) => {
+  try {
+    console.log('Creating group:', req.body);
+    const { name, description, created_by } = req.body;
+    console.log('Creating group:', { name, description, created_by });
+    
+    const createGroupMutation = `
+      mutation ($name: String!, $description: String!, $created_by: Int!) {
+        insert_groups_one(object: {name: $name, description: $description, created_by: $created_by}) {
+          id
+          name
+          description
+          created_by
+          created_at
+        }
+      }
+    `;
+    
+    const result = await queryHasura(createGroupMutation, { name, description, created_by });
+    
+    if (result.errors) {
+      throw new Error(result.errors[0].message);
+    }
+    
+    console.log('Group created:', result.data.insert_groups_one);
+    res.status(201).json(result.data.insert_groups_one);
+  } catch (err) {
+    console.error('Error creating group:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/messages/:groupId', async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -164,7 +188,6 @@ app.get('/api/messages/:groupId', async (req, res) => {
       throw new Error(result.errors[0].message);
     }
     
-    // Format messages to include username
     const formattedMessages = result.data.messages.map(message => ({
       id: message.id,
       group_id: message.group_id,
@@ -182,7 +205,6 @@ app.get('/api/messages/:groupId', async (req, res) => {
   }
 });
 
-// Create a new message
 app.post('/api/messages', async (req, res) => {
   try {
     const { groupId, senderId, content, username } = req.body;
@@ -210,7 +232,6 @@ app.post('/api/messages', async (req, res) => {
       throw new Error(result.errors[0].message);
     }
     
-    // Add username to the response
     const message = result.data.insert_messages_one;
     message.username = username;
     
@@ -222,7 +243,37 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
-// Start the server
+app.post('/api/events/group-created', async (req, res) => {
+  try {
+    const eventData = req.body;
+    console.log('Group created event received:', eventData);
+    console.log('Processing group creation event for group ID:', eventData.event.data.new.id);
+    
+    const insertMessageMutation = `
+      mutation ($groupId: Int!, $senderId: Int!, $content: String!) {
+        insert_messages_one(object: {group_id: $groupId, sender_id: $senderId, content: $content}) {
+          id
+          group_id
+          sender_id
+          content
+          created_at
+        }
+      }
+    `;
+    
+    const result = await queryHasura(insertMessageMutation, { 
+      groupId: eventData.event.data.new.id, 
+      senderId: eventData.event.data.new.created_by, 
+      content: `Create group ${eventData.event.data.new.name}` 
+    });
+    
+    res.status(200).json({ message: 'Group creation event processed successfully' });
+  } catch (err) {
+    console.error('Error processing group creation event:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Chat backend server listening at http://localhost:${port}`);
 });

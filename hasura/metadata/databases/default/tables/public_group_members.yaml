@@ -1,0 +1,10 @@
+table:
+  schema: public
+  name: group_members
+object_relationships:
+  - name: group
+    using:
+      foreign_key_constraint_on: group_id
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id

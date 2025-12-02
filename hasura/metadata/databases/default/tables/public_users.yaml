@@ -1,0 +1,25 @@
+table:
+  schema: public
+  name: users
+array_relationships:
+  - name: group_members
+    using:
+      foreign_key_constraint_on:
+        column: user_id
+        table:
+          schema: public
+          name: group_members
+  - name: groups
+    using:
+      foreign_key_constraint_on:
+        column: created_by
+        table:
+          schema: public
+          name: groups
+  - name: messages
+    using:
+      foreign_key_constraint_on:
+        column: sender_id
+        table:
+          schema: public
+          name: messages

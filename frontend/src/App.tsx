@@ -3,7 +3,7 @@ import './App.css';
 import Login from './Login';
 import { User, Group, Message } from './interfaces';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -11,8 +11,10 @@ function App() {
   const [newMessage, setNewMessage] = useState('');
   const [currentGroup, setCurrentGroup] = useState(1);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupDescription, setNewGroupDescription] = useState('');
 
-  // Fetch groups
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/groups`)
       .then(response => response.json())
@@ -20,7 +22,6 @@ function App() {
       .catch(error => console.error('Error fetching groups:', error));
   }, []);
 
-  // Fetch messages for current group
   useEffect(() => {
     if (currentUser) {
       fetch(`${BACKEND_URL}/api/messages/${currentGroup}`)
@@ -54,6 +55,31 @@ function App() {
       .catch(error => console.error('Error sending message:', error));
   };
 
+  const createGroup = () => {
+    if (!currentUser) return;
+    if (newGroupName.trim() === '') return;
+
+    fetch(`${BACKEND_URL}/api/groups`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: newGroupName,
+        description: newGroupDescription,
+        created_by: currentUser.id
+      }),
+    })
+      .then(response => response.json())
+      .then((data: Group) => {
+        setGroups([...groups, data]);
+        setNewGroupName('');
+        setNewGroupDescription('');
+        setShowCreateGroup(false);
+      })
+      .catch(error => console.error('Error creating group:', error));
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       sendMessage();
@@ -84,7 +110,35 @@ function App() {
       
       <div className="main-content">
         <div className="sidebar">
-          <h2>Groups</h2>
+          <div className="sidebar-header">
+            <h2>Groups</h2>
+            <button onClick={() => setShowCreateGroup(true)} className="create-group-btn">+</button>
+          </div>
+          
+          {showCreateGroup && (
+            <div className="create-group-form">
+              <input
+                type="text"
+                placeholder="Group name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+              />
+              <textarea
+                placeholder="Group description"
+                value={newGroupDescription}
+                onChange={(e) => setNewGroupDescription(e.target.value)}
+              />
+              <div className="form-actions">
+                <button onClick={createGroup}>Create</button>
+                <button onClick={() => {
+                  setShowCreateGroup(false);
+                  setNewGroupName('');
+                  setNewGroupDescription('');
+                }}>Cancel</button>
+              </div>
+            </div>
+          )}
+          
           <ul>
             {groups.map(group => (
               <li 

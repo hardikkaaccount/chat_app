@@ -1,0 +1,40 @@
+table:
+  schema: public
+  name: groups
+object_relationships:
+  - name: user
+    using:
+      foreign_key_constraint_on: created_by
+array_relationships:
+  - name: group_members
+    using:
+      foreign_key_constraint_on:
+        column: group_id
+        table:
+          schema: public
+          name: group_members
+  - name: messages
+    using:
+      foreign_key_constraint_on:
+        column: group_id
+        table:
+          schema: public
+          name: messages
+event_triggers:
+  - name: create_group
+    definition:
+      enable_manual: false
+      insert:
+        columns: '*'
+      update:
+        columns:
+          - name
+          - created_by
+          - id
+          - description
+          - created_at
+    retry_conf:
+      num_retries: 0
+      interval_sec: 10
+      timeout_sec: 60
+    webhook: http://host.docker.internal:8001/api/events/group-created

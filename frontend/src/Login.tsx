@@ -32,14 +32,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       });
       
       const data = await response.json();
-      
+    
       if (response.ok) {
         if (isRegistering) {
-          // After registration, switch to login mode
           setIsRegistering(false);
           setError('Registration successful! Please log in.');
         } else {
-          // Login successful
           onLogin(data);
         }
       } else {
