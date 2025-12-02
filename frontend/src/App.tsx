@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Login from './Login';
+import { User, Group, Message } from './interfaces';
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [currentGroup, setCurrentGroup] = useState(1);
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState<Group[]>([]);
 
   // Fetch groups
   useEffect(() => {
     fetch('http://localhost:8001/api/groups')
       .then(response => response.json())
-      .then(data => setGroups(data))
+      .then((data: Group[]) => setGroups(data))
       .catch(error => console.error('Error fetching groups:', error));
   }, []);
 
@@ -22,7 +23,7 @@ function App() {
     if (currentUser) {
       fetch(`http://localhost:8001/api/messages/${currentGroup}`)
         .then(response => response.json())
-        .then(data => setMessages(data))
+        .then((data: Message[]) => setMessages(data))
         .catch(error => console.error('Error fetching messages:', error));
     }
   }, [currentGroup, currentUser]);
@@ -44,20 +45,20 @@ function App() {
       }),
     })
       .then(response => response.json())
-      .then(data => {
+      .then((data: Message) => {
         setMessages([...messages, data]);
         setNewMessage('');
       })
       .catch(error => console.error('Error sending message:', error));
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       sendMessage();
     }
   };
 
-  const handleLogin = (user) => {
+  const handleLogin = (user: User) => {
     setCurrentUser(user);
   };
 

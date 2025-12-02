@@ -1,19 +1,12 @@
 {
-  "name": "cloudspeak-hasura-crash-course-frontend",
-  "version": "0.1.0",
-  "author": "cloudspeak",
+  "name": "chat-app-frontend",
+  "version": "1.0.0",
+  "author": "User",
   "license": "MIT",
   "dependencies": {
-    "@apollo/client": "^3.3.21",
-    "@auth0/auth0-react": "^1.5.0",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "graphql": "^15.5.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-scripts": "4.0.3",
-    "web-vitals": "^1.0.1"
+    "react-scripts": "4.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -38,5 +31,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "typescript": "^4.9.5"
   }
 }
