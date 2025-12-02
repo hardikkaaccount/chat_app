@@ -3,6 +3,8 @@ import './App.css';
 import Login from './Login';
 import { User, Group, Message } from './interfaces';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -12,7 +14,7 @@ function App() {
 
   // Fetch groups
   useEffect(() => {
-    fetch('http://localhost:8001/api/groups')
+    fetch(`${BACKEND_URL}/api/groups`)
       .then(response => response.json())
       .then((data: Group[]) => setGroups(data))
       .catch(error => console.error('Error fetching groups:', error));
@@ -21,7 +23,7 @@ function App() {
   // Fetch messages for current group
   useEffect(() => {
     if (currentUser) {
-      fetch(`http://localhost:8001/api/messages/${currentGroup}`)
+      fetch(`${BACKEND_URL}/api/messages/${currentGroup}`)
         .then(response => response.json())
         .then((data: Message[]) => setMessages(data))
         .catch(error => console.error('Error fetching messages:', error));
@@ -32,7 +34,7 @@ function App() {
     if (!currentUser) return;
     if (newMessage.trim() === '') return;
 
-    fetch('http://localhost:8001/api/messages', {
+    fetch(`${BACKEND_URL}/api/messages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

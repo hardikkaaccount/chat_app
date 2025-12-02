@@ -5,6 +5,8 @@ interface LoginProps {
   onLogin: (user: User) => void;
 }
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState('');
@@ -21,7 +23,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         ? { username, email, password }
         : { username, password };
       
-      const response = await fetch(`http://localhost:8001${endpoint}`, {
+      const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
