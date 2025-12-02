@@ -101,7 +101,7 @@ function App() {
   return (
     <div className="app">
       <div className="header">
-        <h1>Chat App</h1>
+        <h1>Mathu Kathe</h1>
         <div className="user-info">
           <span>Logged in as: {currentUser.username}</span>
           <button onClick={handleLogout} className="logout-btn">Logout</button>

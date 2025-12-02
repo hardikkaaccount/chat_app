@@ -21,7 +21,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       const endpoint = isRegistering ? '/api/register' : '/api/login';
       const body = isRegistering 
         ? { username, email, password }
-        : { username, password };
+        : { email, password }; // Changed from { username, password } to { email, password }
       
       const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: 'POST',
@@ -54,16 +54,28 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <h2>{isRegistering ? 'Register' : 'Login'}</h2>
         {error && <div className="error">{error}</div>}
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          {isRegistering && (
+          {isRegistering ? (
+            <>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          ) : (
             <div className="form-group">
               <input
                 type="email"

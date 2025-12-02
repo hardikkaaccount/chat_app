@@ -1,6 +1,11 @@
-actions: []
+actions:
+  - name: registerUser
+    definition:
+      kind: synchronous
+      handler: http://host.docker.internal:8001/api/actions/register-user
 custom_types:
   enums: []
   input_objects: []
-  objects: []
+  objects:
+    - name: UserRegistrationOutput
   scalars: []

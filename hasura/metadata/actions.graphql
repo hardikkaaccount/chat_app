@@ -1,0 +1,14 @@
+type Mutation {
+  registerUser(
+    username: String!
+    email: String!
+    password: String!
+  ): UserRegistrationOutput
+}
+
+type UserRegistrationOutput {
+  id: Int!
+  username: String!
+  email: String!
+}
+

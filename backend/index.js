@@ -11,6 +11,7 @@ app.use(express.json());
 
 const HASURA_ENDPOINT = process.env.HASURA_ENDPOINT;
 const HASURA_ADMIN_SECRET = process.env.HASURA_ADMIN_SECRET;
+const bcrypt = require('bcrypt');
 
 async function queryHasura(query, variables = {}) {
   const response = await fetch(HASURA_ENDPOINT, {
@@ -36,6 +37,8 @@ app.post('/api/register', async (req, res) => {
       query ($username: String!, $email: String!) {
         users(where: {_or: [{username: {_eq: $username}}, {email: {_eq: $email}}]}) {
           id
+          username
+          email
         }
       }
     `;
@@ -46,9 +49,13 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'User already exists with this username or email' });
     }
     
+    // Hash the password before storing
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    
     const createUserMutation = `
-      mutation ($username: String!, $email: String!, $password: String!) {
-        insert_users_one(object: {username: $username, email: $email, password_hash: $password}) {
+      mutation ($username: String!, $email: String!, $hashedPassword: String!) {
+        insert_users_one(object: {username: $username, email: $email, password_hash: $hashedPassword}) {
           id
           username
           email
@@ -56,7 +63,7 @@ app.post('/api/register', async (req, res) => {
       }
     `;
     
-    const result = await queryHasura(createUserMutation, { username, email, password });
+    const result = await queryHasura(createUserMutation, { username, email, hashedPassword });
     
     if (result.errors) {
       throw new Error(result.errors[0].message);
@@ -71,29 +78,41 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
-    
+    const { email, password } = req.body;
+    // Fetch user with password hash
     const loginQuery = `
-      query ($username: String!, $password: String!) {
-        users(where: {username: {_eq: $username}, password_hash: {_eq: $password}}) {
+      query ($email: String!) {
+        users(where: {email: {_eq: $email}}) {
           id
           username
           email
+          password_hash
         }
       }
     `;
     
-    const result = await queryHasura(loginQuery, { username, password });
+    const result = await queryHasura(loginQuery, { email });
     
     if (result.errors) {
       throw new Error(result.errors[0].message);
     }
     
     if (result.data.users.length === 0) {
-      return res.status(401).json({ error: 'Invalid username or password' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
     
-    res.json(result.data.users[0]);
+    const user = result.data.users[0];
+    
+    // Compare the provided password with the hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
+    
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    // Return user data without the password hash
+    const { password_hash, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
   } catch (err) {
     console.error('Error logging in:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -271,6 +290,65 @@ app.post('/api/events/group-created', async (req, res) => {
   } catch (err) {
     console.error('Error processing group creation event:', err);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// New Hasura Action for registerUser
+app.post('/api/actions/register-user', async (req, res) => {
+  try {
+    // Extract session variables and input from the request
+    const { session_variables, input } = req.body;
+    const { username, email, password } = input;
+    
+    // Check if user already exists
+    const existingUserQuery = `
+      query ($username: String!, $email: String!) {
+        users(where: {_or: [{username: {_eq: $username}}, {email: {_eq: $email}}]}) {
+          id
+          username
+          email
+        }
+      }
+    `;
+    
+    const existingUserResult = await queryHasura(existingUserQuery, { username, email });
+    
+    if (existingUserResult.data.users.length > 0) {
+      return res.status(200).json({
+        message: 'User already exists with this username or email'
+      });
+    }
+    
+    // Hash the password before storing
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    
+    // Create the user
+    const createUserMutation = `
+      mutation ($username: String!, $email: String!, $hashedPassword: String!) {
+        insert_users_one(object: {username: $username, email: $email, password_hash: $hashedPassword}) {
+          id
+          username
+          email
+        }
+      }
+    `;
+    
+    const result = await queryHasura(createUserMutation, { username, email, hashedPassword });
+    
+    if (result.errors) {
+      throw new Error(result.errors[0].message);
+    }
+    
+    // Return the user data
+    res.json({
+      id: result.data.insert_users_one.id,
+      username: result.data.insert_users_one.username,
+      email: result.data.insert_users_one.email
+    });
+  } catch (err) {
+    console.error('Error in registerUser action:', err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
