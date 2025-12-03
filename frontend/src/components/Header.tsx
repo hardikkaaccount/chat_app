@@ -21,12 +21,7 @@ const Header: React.FC<HeaderProps> = ({ username, onLogout, toggleSidebar }) =>
         <h1>Mathu Kathe</h1>
       </div>
       <div className="user-info">
-        <nav className="navigation">
-          <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'nav-link active' : 'nav-link'}>
-            Dashboard
-          </Link>
-        </nav>
-        <span>Logged in as: {username}</span>
+        <span><b>Logged in as: </b>{username}</span>
         <button onClick={onLogout} className="logout-btn">Logout</button>
       </div>
     </div>
