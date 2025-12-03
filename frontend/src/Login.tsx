@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User } from './interfaces';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -8,6 +9,7 @@ interface LoginProps {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -39,6 +41,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           setError('Registration successful! Please log in.');
         } else {
           onLogin(data);
+          navigate('/home'); // Navigate to home after login
         }
       } else {
         setError(data.error || 'An error occurred');

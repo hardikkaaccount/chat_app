@@ -96,7 +96,7 @@ interface Message {
 
 ## Data Flow Diagram
 
-```mermaid
+```
 graph TD
     A[User Interface] --> B[App Component]
     B --> C[Backend API]
@@ -172,3 +172,62 @@ npm run build
 ```
 
 This creates an optimized production build in the `build/` directory.
+
+# Frontend Application Structure
+
+## Overview
+The frontend application has been restructured to use proper routing and component-based architecture for better organization and scalability.
+
+## Component Structure
+```mermaid
+graph TD
+    A[App] --> B[Router]
+    B --> C[LoginPage]
+    B --> D[RegisterPage]
+    B --> E[ProtectedRoute]
+    E --> F[ChatInterface]
+    
+    F --> G[Header]
+    F --> H[Sidebar]
+    F --> I[ChatArea]
+    
+    I --> J[Messages]
+    I --> K[InputArea]
+```
+
+## Routing Structure
+- `/` - Login page (redirects to groups if already logged in)
+- `/login` - Login page
+- `/register` - Registration page
+- `/groups` - Main chat interface with groups sidebar
+- `/group/:id` - Specific group chat (same interface, different group selected)
+
+## Key Features
+1. **Responsive Design**: Sidebar transforms into a hamburger menu on mobile devices
+2. **Component-Based Architecture**: Each UI element is a separate reusable component
+3. **Proper Routing**: Different pages for login, registration, and chat interface
+4. **Protected Routes**: Authentication required for chat interface
+5. **Unified Chat Interface**: Single interface for all group chats with persistent sidebar
+
+## Components
+- **Header**: Contains navigation links and logout functionality
+- **Sidebar**: Displays list of groups with create group functionality (always visible)
+- **ChatArea**: Combines messages display and input area
+- **Messages**: Displays chat messages
+- **InputArea**: Handles message input and submission
+- **LoginPage**: User authentication
+- **RegisterPage**: New user registration
+- **ChatInterface**: Main chat interface with groups sidebar and dynamic content area
+- **ProtectedRoute**: Wrapper for authenticated routes
+
+## Responsive Behavior
+- On desktop: Sidebar is always visible on the left
+- On mobile: Sidebar is hidden by default and accessible via hamburger menu
+- Smooth transitions for sidebar open/close animations
+
+## Navigation Flow
+1. User logs in or registers
+2. User is redirected to `/groups` which shows a welcome message and the groups sidebar
+3. User clicks on a group in the sidebar to navigate to `/group/:id`
+4. The same ChatInterface component is used for both routes, but displays different content based on the selected group
+5. The sidebar remains fixed and always shows all groups
